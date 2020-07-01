@@ -37,18 +37,23 @@ userSchema.methods.addToCart = function (wordId) {
 }
 
 //wordId to be of type ObjectId
-userSchema.methods.removeFromCart = function (wordId) {
-    const updatedCartItems = this.cart.filter((wordRef) => {
-        return !wordRef.equals(wordId)
-    })
-    if (this.cart.length == updatedCartItems.length) {
-        console.log(
-            'no word removed from cart upon attempt... user model mongoose'
-        )
-    }
-    this.cart = updatedCartItems
-    return this.save()
-}
+userSchema.methods.removeFromCart = function(wordId) {
+  const updatedCartItems = this.cart.filter(wordRef => {
+    return !wordRef.equals(wordId)
+  });
+  if (this.cart.length == updatedCartItems.length) {
+    console.log('no word removed from cart upon attempt... user model mongoose')
+  }
+  this.cart = updatedCartItems;
+  return this.save();
+};
+
+userSchema.methods.emptyCart = function() {
+  this.cart = [];
+  console.log('mongoose model emptying cart method')
+  return this.save();
+};
+
 
 userSchema.methods.clearCart = function () {
     this.cart = []
