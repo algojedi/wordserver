@@ -7,8 +7,8 @@ const mongoose = require('mongoose')
 // const redisClient = require('./redis')
 const rateLimit = require('express-rate-limit')
 const morgan = require('morgan')
-const authRoutes = require('./routes/auth')
 const wordRoutes = require('./routes/words')
+const userRoutes = require('./routes/user');
 require('dotenv').config()
 
 const MONGO_URI = `mongodb+srv://${process.env.DB_UN}:${process.env.DB_PW}@cluster0-ohht9.azure.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w    =majority`
@@ -71,7 +71,7 @@ app.use(myLimiter)
 //         })
 //     }
 // })
-app.use(authRoutes)
+app.use(userRoutes)
 app.use(wordRoutes)
 
 // handle uncaught errors
@@ -94,7 +94,7 @@ mongoose
         useCreateIndex: true,
     })
     .then(() => {
-        const PORT = process.env.PORT || 3000
+        const PORT = process.env.PORT || 5000
         app.listen(PORT, () => {
             console.log(`Mixing it up on port ${PORT}`)
         })

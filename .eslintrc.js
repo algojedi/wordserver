@@ -13,6 +13,7 @@ module.exports = {
     rules: {
         'no-console': 'off',
         'comma-dangle': 'off',
+        'consistent-return': 'off',
         semi: 'off',
         'no-underscore-dangle': 'off',
         indent: ['warn', 4],
