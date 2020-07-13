@@ -1,25 +1,22 @@
-const jwt = require('jsonwebtoken')
+// const jwt = require('jsonwebtoken')
+const redisClient = require('../redis')
 
-module.exports = (req, res, next) => {
-    const authHeader = req.get('Authorization')
-    if (!authHeader) {
-        const error = new Error('Not authenticated.')
+module.exports = async (req, res, next) => {
+    // save userid on req object if there's a token
+    const { authorization } = req.headers // authorization is the token
+    if (!authorization) {
+        const error = new Error('Not authenticated')
         error.statusCode = 401
         throw error
     }
-    const token = authHeader.split(' ')[1]
-    let decodedToken
-    try {
-        decodedToken = jwt.verify(token, 'somesupersecretsecret')
-    } catch (err) {
-        err.statusCode = 500
-        throw err
-    }
-    if (!decodedToken) {
-        const error = new Error('Not authenticated.')
-        error.statusCode = 401
-        throw error
-    }
-    req.userId = decodedToken.userId
-    next()
+    console.log({ authorization })
+    await redisClient.get(authorization, (err, reply) => {
+        if (err || !reply) {
+            console.log('issue with token', err)
+            return res.status(400).json({ error: { message: 'Authorization denied' } })
+        }
+        console.log('reply from redis in middleware', reply)
+        req.userId = JSON.parse(reply)
+        next()
+    })
 }

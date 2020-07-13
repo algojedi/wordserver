@@ -1,30 +1,33 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const express = require('express')
 const bodyParser = require('body-parser')
-// const path = require('path')
+const path = require('path')
+const compression = require('compression')
 const cors = require('cors')
 const mongoose = require('mongoose')
-// const redisClient = require('./redis')
 const rateLimit = require('express-rate-limit')
 const morgan = require('morgan')
 const wordRoutes = require('./routes/words')
-const userRoutes = require('./routes/user');
+const userRoutes = require('./routes/user')
 require('dotenv').config()
 
-const MONGO_URI = `mongodb+srv://${process.env.DB_UN}:${process.env.DB_PW}@cluster0-ohht9.azure.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w    =majority`
 const app = express()
 
 if (process.env.NODE_ENV === 'production') {
     console.log('Running in production')
+    app.use(express.static(path.join(__dirname, 'build')))
+    app.get('/', (req, res) => {
+        res.sendFile(path.join(__dirname, 'build', 'index.html'))
+    })
 } else {
     console.log('not in production', process.env.NODE_ENV)
 }
-morgan(':method :url :status :res[content-length] - :response-time ms')
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
 app.use(cors())
 app.use(bodyParser.json())
+app.use(compression())
 
 // ---------- rate limiting --------------------//
-// TODO: remove all middleware into middleware folder
 
 let counter = 0 // simple ddos precaution
 
@@ -32,7 +35,7 @@ const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // limit each IP to 100 requests per windowMs
     message: 'You have exceeded the 100 requests in 15 mins limit!',
-    headers: true,
+    headers: true
 })
 
 //  apply to all requests, targetting each user
@@ -52,25 +55,6 @@ app.use(myLimiter)
 
 //---------------------------------------
 
-// save userid on req object if there's a token
-// app.use(function (req, res, next) {
-//     const { authorization } = req.headers //authorization is the token
-//     if (!authorization) {
-//         console.log('no auth token')
-//         return next() // user will not be able to access all routes
-//     } else {
-//         //    console.log(authorization)
-//         redisClient.get(authorization, (err, reply) => {
-//             if (err || !reply) {
-//                 console.log('issue with token', err)
-//                 return res.status(400).json('Authorization denied')
-//             }
-//             //     console.log('reply from redis in middleware', reply)
-//             req.userId = JSON.parse(reply)
-//             next()
-//         })
-//     }
-// })
 app.use(userRoutes)
 app.use(wordRoutes)
 
@@ -87,11 +71,12 @@ app.use((err, req, res, next) => {
     res.json({ error: { message: err.message } })
 })
 
+const MONGO_URI = `mongodb+srv://${process.env.DB_UN}:${process.env.DB_PW}@cluster0-ohht9.azure.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w    =majority`
 mongoose
     .connect(MONGO_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        useCreateIndex: true,
+        useCreateIndex: true
     })
     .then(() => {
         const PORT = process.env.PORT || 5000

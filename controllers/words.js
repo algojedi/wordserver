@@ -1,9 +1,7 @@
-const express = require('express')
 const axios = require('axios')
 const Wordef = require('../models/wordef')
 const User = require('../models/user')
 
-const router = express.Router()
 const API_URL = 'https://od-api.oxforddictionaries.com/api/v2/entries/en-gb/'
 
 // this method only runs if the word is NOT in the application database
@@ -110,9 +108,9 @@ exports.define_word = async (req, res) => {
 // precondition: word was searched previously and therefore inside the application db
 // this may cause error in cases where word was not successfully saved in db
 // precondition: user id is attached to request object
-exports.add_word_to_cart =  async (req, res) => {
+exports.add_word_to_cart = async (req, res) => {
     let { word } = req.body // TODO: this may cause error
-    if (!word) { 
+    if (!word) {
         return res.status(400).json({ error: { message: 'no word entered' } })
     }
     word = word.toLowerCase()
@@ -148,7 +146,7 @@ exports.add_word_to_cart =  async (req, res) => {
 // precondition: user id is attached to request object
 exports.remove_word = async (req, res) => {
     const { wordId } = req.body
-    if (!wordId) { 
+    if (!wordId) {
         return res.status(400).json({ error: { message: 'no word entered' } })
     }
     try {
@@ -190,5 +188,3 @@ exports.empty_cart = async (req, res) => {
         })
     }
 }
-
-module.exports = router

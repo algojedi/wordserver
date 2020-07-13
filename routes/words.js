@@ -4,9 +4,9 @@ const isAuth = require('../middleware/is-auth')
 
 const router = express.Router()
 
-router.get('/define', WordsController.define_word)
-
 router.post('/addWordToCart', isAuth, WordsController.add_word_to_cart)
+
+router.get('/define', WordsController.define_word)
 
 router.post('/removeWord', isAuth, WordsController.remove_word)
 

@@ -11,6 +11,7 @@ const signToken = (email) => {
     })
 }
 
+// returns token on success and throws error on failure
 const createSession = (user) => {
     // create jwt and user data
     const { _id, email } = user
@@ -27,7 +28,7 @@ const createSession = (user) => {
                 if (err) {
                     reject(new Error('error in saving token to redis'))
                 } else {
-                    resolve({ token })
+                    resolve(token)
                 }
             }
         )
@@ -74,12 +75,13 @@ exports.user_login = async (req, res, next) => {
             return res.status(404).json({ error: { message: 'no such user' } })
         }
         console.log({ userId })
-        const token = await createSession(userId, email) // sessionInfo will return null on fail
+        const token = await createSession(userId, email) // returns the token 
         console.log('from session creation: ', token)
         return token
             ? res.status(200).json({
                 message: 'authentication successful',
-                token
+                token,
+                userId
             })
             : res
                 .status(500)
@@ -127,7 +129,7 @@ exports.user_logout = (req, res) => {
         return res
             .status(500)
             .json({
-                error: { message: 'error signing out', detail: err.message }
+                error: { message: 'error signing out', detail: err }
             })
     })
 }
