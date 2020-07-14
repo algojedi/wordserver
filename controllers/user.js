@@ -53,18 +53,8 @@ const handleSignIn = (email, password) => User.findOne({ email })
         return null
     })
 
-// for the login route
-exports.user_login = async (req, res, next) => {
-    // TODO: need to check for case where loggin unneccessarily?
-    // const { authorization } = req.headers
-    // if (authorization) {
-    //     return res.json({
-    //         message: 'already authenticated'
-    //         token: authorization
-    //     })
-    // }
-    // no auth token
-
+// for the login route. Returns token and user id on success
+exports.user_login = async (req, res) => {
     const { email, password } = req.body
     if (!email || !password) {
         return res.status(400).json({ error: { message: 'invalid input' } })
@@ -95,10 +85,14 @@ exports.user_login = async (req, res, next) => {
 }
 
 exports.user_profile = async (req, res) => {
-    const userId = req.params.id
-    console.log('user id received in profile req: ', userId)
-    return User.findOne({ _id: userId }) // mongo id in User stored as _id
-
+    // if (!req.params) {
+    //     return res.status(400).json({ error: { message: 'must provide id' } })
+    // }
+    // const userId = req.params.id
+    // console.log('user id received in profile req: ', userId)
+    // return User.findOne({ _id: userId }) // mongo id in User stored as _id
+    console.log('user id from req obj at profile route: ', req.userId)
+    return User.findOne({ _id: req.userId }) // mongo id in User stored as _id
         .populate('cart')
         .then((user) => {
             if (!user) {

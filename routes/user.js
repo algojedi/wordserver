@@ -8,7 +8,8 @@ router.post('/register', UserController.user_register)
 
 router.post('/login', UserController.user_login)
 
-router.get('/profile/:id', isAuth, UserController.user_profile)
+// router.get('/profile/:id', isAuth, UserController.user_profile)
+router.get('/profile', isAuth, UserController.user_profile)
 
 router.post('/logout', UserController.user_logout)
 
