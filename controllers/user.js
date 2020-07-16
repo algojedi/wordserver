@@ -1,6 +1,5 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-// const mongoose = require('mongoose');
 const redisClient = require('../redis')
 const User = require('../models/user')
 
@@ -85,12 +84,6 @@ exports.user_login = async (req, res) => {
 }
 
 exports.user_profile = async (req, res) => {
-    // if (!req.params) {
-    //     return res.status(400).json({ error: { message: 'must provide id' } })
-    // }
-    // const userId = req.params.id
-    // console.log('user id received in profile req: ', userId)
-    // return User.findOne({ _id: userId }) // mongo id in User stored as _id
     console.log('user id from req obj at profile route: ', req.userId)
     return User.findOne({ _id: req.userId }) // mongo id in User stored as _id
         .populate('cart')
