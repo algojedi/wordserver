@@ -61,19 +61,16 @@ exports.user_login = async (req, res) => {
     try {
         const userId = await handleSignIn(email, password) // handleSignIn validates login info
         if (!userId) {
-            return res.status(404).json({ error: { message: 'no such user' } })
+            return res.status(401).json({ error: { message: 'no such user' } })
         }
-        console.log({ userId })
-        const token = await createSession(userId, email) // returns the token 
-        console.log('from session creation: ', token)
+        const token = await createSession(userId, email) // returns the token
         return token
             ? res.status(200).json({
                 message: 'authentication successful',
                 token,
                 userId
             })
-            : res
-                .status(500)
+            : res.status(500)
                 .json({ error: { message: 'server failed to save data' } })
     } catch (err) {
         console.log(err)
@@ -83,23 +80,21 @@ exports.user_login = async (req, res) => {
     }
 }
 
-exports.user_profile = async (req, res) => {
-    console.log('user id from req obj at profile route: ', req.userId)
-    return User.findOne({ _id: req.userId }) // mongo id in User stored as _id
-        .populate('cart')
-        .then((user) => {
-            if (!user) {
-                return res.status(400).json({
-                    error: {
-                        message: 'invalid profile request',
-                        detail: 'user id not found'
-                    }
-                })
-            }
-            const { email, cart, name } = user
-            return res.status(200).json({ email, cart, name })
-        })
-}
+// mongo id in User stored as _id
+exports.user_profile = async (req, res) => User.findOne({ _id: req.userId })
+    .populate('cart')
+    .then((user) => {
+        if (!user) {
+            return res.status(400).json({
+                error: {
+                    message: 'invalid profile request',
+                    detail: 'user id not found'
+                }
+            })
+        }
+        const { email, cart, name } = user
+        return res.status(200).json({ email, cart, name })
+    })
 
 exports.user_logout = (req, res) => {
     const { authorization } = req.headers
@@ -109,15 +104,12 @@ exports.user_logout = (req, res) => {
     }
     redisClient.del(authorization, (err, response) => {
         if (response === 1) {
-            console.log('logged out')
             return res.status(200).json({ message: 'sign out successful ' })
         }
         console.log('error logging out')
-        return res
-            .status(500)
-            .json({
-                error: { message: 'error signing out', detail: err }
-            })
+        return res.status(500).json({
+            error: { message: 'error signing out', detail: err }
+        })
     })
 }
 
@@ -139,22 +131,18 @@ exports.user_register = async (req, res) => {
             cart: []
         })
         const savedUser = await user.save()
-        // const sessionInfo = await createSession(savedUser) // createSession returns a promise
-        // if (sessionInfo.token) {
-        //     // token created
-        //     console.log('session token created and sent in register route')
-        //     return res.status(200).json({
-        //         id: user._id,
-        //         token: sessionInfo.token,
-        //         message: 'registration successful'
-        //     })
-        // // eslint-disable-next-line no-else-return
-        // } else {
-        //     throw new Error('server error during token creation')
-        // }
-        return res
-            .status(200)
-            .json({ id: savedUser._id, message: 'registration successful' })
+        const token = await createSession(savedUser) // createSession returns a promise
+        if (token) {
+            // token created
+            return res.status(200).json({
+                id: user._id,
+                token,
+                message: 'registration successful'
+            })
+            // eslint-disable-next-line no-else-return
+        } else {
+            throw new Error('server error during token creation')
+        }
     } catch (err) {
         console.log(err.message)
         return res
