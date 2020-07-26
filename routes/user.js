@@ -11,7 +11,7 @@ router.post('/register', [
     // username must be an email
     body('email').isEmail(),
     // password must be at least 4 chars
-    body('password').isLength({ min: 5 })
+    body('password').isLength({ min: 4 })
 ], isValid, UserController.user_register)
 
 router.post('/login', UserController.user_login)
