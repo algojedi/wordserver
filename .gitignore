@@ -5,3 +5,5 @@ package-lock.json
 /redis.js
 wordsie/
 .vscode/
+/build
+/client
